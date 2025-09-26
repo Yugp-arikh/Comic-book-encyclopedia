@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load comic_filters %}
+{% block title %}{{ comic.get_clean_title }} - Comics Encyclopedia{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <div class="results-header">
+        <div>
+            <h2>{{ comic.get_clean_title }}</h2>
+            <p>Comic Details - ID: {{ comic.bl_record_id }}</p>
+        </div>
+        <div>
+            <a href="javascript:history.back()" class="btn btn-secondary btn-small">← Back</a>
+        </div>
+    </div>
+    
+    <div class="comic-card" style="border-bottom: none;">
+        <!-- Basic Information -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+            <div>
+                <h3 style="color: #667eea; margin-bottom: 1rem; border-bottom: 2px solid #e1e5e9; padding-bottom: 0.5rem;">
+                    Basic Information
+                </h3>
+                
+                <div class="meta-item" style="margin-bottom: 1rem;">
+                    <span class="meta-label">BL Record ID:</span> 
+                    <code style="background: #f8f9fa; padding: 0.2rem 0.5rem; border-radius: 3px;">{{ comic.bl_record_id }}</code>
+                </div>
+                
+                <div class="meta-item" style="margin-bottom: 1rem;">
+                    <span class="meta-label">Title:</span> 
+                    {{ comic.get_clean_title }}
+                </div>
+                
+                {% if comic.variant_titles %}
+                    <div class="meta-item" style="margin-bottom: 1rem;">
+                        <span class="meta-label">Variant Titles:</span>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            {% for title in comic.variant_titles %}
+                                <li>{{ title }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                
+                <div class="meta-item" style="margin-bottom: 1rem;">
+                    <span class="meta-label">ISBN:</span> 
+                    {% if comic.isbn and comic.isbn.0 != "missing" %}
+                        {% for isbn in comic.isbn %}
+                            <code style="background: #f8f9fa; padding: 0.2rem 0.5rem; border-radius: 3px; margin-right: 0.5rem;">{{ isbn }}</code>
+                        {% endfor %}
+                    {% else %}
+                        <span class="isbn-missing">Missing</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div>
+                <h3 style="color: #667eea; margin-bottom: 1rem; border-bottom: 2px solid #e1e5e9; padding-bottom: 0.5rem;">
+                    Publication Details
+                </h3>
+                
+                {% if comic.authors %}
+                    <div class="meta-item" style="margin-bottom: 1rem;">
+                        <span class="meta-label">Authors:</span>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            {% for author in comic.authors %}
+                                <li>{{ author }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                
+                {% if comic.publication_years %}
+                    <div class="meta-item" style="margin-bottom: 1rem;">
+                        <span class="meta-label">Publication Years:</span>
+                        {% for year in comic.publication_years %}
+                            <span style="background: #e3f2fd; padding: 0.2rem 0.5rem; border-radius: 3px; margin-right: 0.5rem;">{{ year }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% if comic.genres %}
+                    <div class="meta-item" style="margin-bottom: 1rem;">
+                        <span class="meta-label">Genres:</span>
+                        {% for genre in comic.genres %}
+                            <span style="background: #f3e5f5; padding: 0.2rem 0.5rem; border-radius: 3px; margin-right: 0.5rem;">{{ genre }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% if comic.languages %}
+                    <div class="meta-item" style="margin-bottom: 1rem;">
+                        <span class="meta-label">Languages:</span>
+                        {% for language in comic.languages %}
+                            <span style="background: #e8f5e8; padding: 0.2rem 0.5rem; border-radius: 3px; margin-right: 0.5rem;">{{ language }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Additional Fields -->
+        {% if comic.get_multi_value_fields %}
+            <div style="margin-top: 2rem;">
+                <h3 style="color: #667eea; margin-bottom: 1rem; border-bottom: 2px solid #e1e5e9; padding-bottom: 0.5rem;">
+                    Additional Information
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    {% for field_name, field_values in comic.get_multi_value_fields.items %}
+                        <div class="meta-item">
+                            <span class="meta-label">{{ field_name|format_field_name }}:</span>
+                            {% if field_values|length > 1 %}
+                                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                    {% for value in field_values %}
+                                        <li>{{ value }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div style="margin-top: 0.5rem;">{{ field_values.0 }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Actions -->
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e1e5e9;">
+            <form action="{% url 'save_to_search_list' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="bl_id" value="{{ comic.bl_record_id }}">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn">Add to Search List</button>
+            </form>
+            
+            <a href="{% url 'index' %}" class="btn btn-secondary">New Search</a>
+        </div>
+    </div>
+</div>
+
+<!-- Aggregated Variants Section -->
+{% if comic.variant_titles %}
+    <div class="results-container" style="margin-top: 2rem;">
+        <div class="results-header">
+            <h3>Related Variants</h3>
+        </div>
+        <div class="comic-card" style="border-bottom: none;">
+            <p style="color: #666; margin-bottom: 1rem;">
+                This comic has {{ comic.variant_titles|length }} variant title{{ comic.variant_titles|length|pluralize }}.
+                Multiple titles may represent different editions, formats, or regional releases of the same work.
+            </p>
+            
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px;">
+                <strong>Aggregated Data for "{{ comic.get_clean_title }}":</strong>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>Total variant titles: {{ comic.variant_titles|length }}</li>
+                    <li>Publication years: {{ comic.publication_years|join:", " }}</li>
+                    <li>Available ISBNs: {% if comic.isbn and comic.isbn.0 != "missing" %}{{ comic.isbn|length }}{% else %}None{% endif %}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

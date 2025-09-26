@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Search Results - Comics Encyclopedia{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <div class="results-header">
+        <div>
+            <h2>Search Results</h2>
+            {% if query %}
+                <p>Showing results for: "<strong>{{ query }}</strong>"</p>
+            {% elif search_params %}
+                <p>Advanced search results:</p>
+                <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+                    {% if search_params.author %}<span>Author: <strong>{{ search_params.author }}</strong></span> | {% endif %}
+                    {% if search_params.year %}<span>Year: <strong>{{ search_params.year }}</strong></span> | {% endif %}
+                    {% if search_params.genre %}<span>Genre: <strong>{{ search_params.genre }}</strong></span> | {% endif %}
+                    {% if search_params.edition %}<span>Edition: <strong>{{ search_params.edition }}</strong></span> | {% endif %}
+                    {% if search_params.languages %}<span>Languages: <strong>{{ search_params.languages }}</strong></span> | {% endif %}
+                    {% if search_params.name_type %}<span>Name Type: <strong>{{ search_params.name_type }}</strong></span>{% endif %}
+                </div>
+            {% endif %}
+            <p>Found {{ results|length }} comic(s)</p>
+        </div>
+        <div>
+            <a href="{% url 'index' %}" class="btn btn-secondary btn-small">New Search</a>
+            {% if results %}
+                <a href="{% url 'clear_search_results' %}" class="btn btn-danger btn-small">Clear Results</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if not results %}
+        <div style="padding: 3rem; text-align: center; color: #666;">
+            <h3>No comics found</h3>
+            <p>No comics match your search criteria. Here are some suggestions:</p>
+            
+            <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px; margin: 2rem 0; text-align: left;">
+                <h4 style="color: #333; margin-bottom: 1rem;">Try searching for:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <strong>Popular Authors:</strong>
+                        <ul style="margin: 0.5rem 0 0 1rem; color: #666;">
+                            <li>Blakeslee</li>
+                            <li>8fish</li>
+                            <li>Nitroplus</li>
+                            <li>Sarachi, Yomi</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong>Common Genres:</strong>
+                        <ul style="margin: 0.5rem 0 0 1rem; color: #666;">
+                            <li>Novel</li>
+                            <li>Young adult fiction</li>
+                            <li>Comic or graphic novel</li>
+                            <li>Science fiction</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong>Recent Years:</strong>
+                        <ul style="margin: 0.5rem 0 0 1rem; color: #666;">
+                            <li>2020</li>
+                            <li>2018</li>
+                            <li>2016</li>
+                            <li>2000</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <a href="{% url 'index' %}" class="btn">Back to Search</a>
+                <a href="{% url 'advanced_search' %}" class="btn btn-secondary">Try Advanced Search</a>
+            </div>
+        </div>
+    {% else %}
+        {% if groups %}
+            <!-- Grouped Results -->
+            {% for group_name, group_comics in groups.items %}
+                <div class="group-section">
+                    <div class="group-header">
+                        {{ group_by|title }}: {{ group_name }} ({{ group_comics|length }} comic{{ group_comics|length|pluralize }})
+                    </div>
+                    {% for comic in group_comics %}
+                        <div class="comic-card">
+                            <div class="comic-title">
+                                <a href="{% url 'comic_detail' comic.bl_record_id %}" style="text-decoration: none; color: #333;">
+                                    {{ comic.get_clean_title }}
+                                </a>
+                            </div>
+                            
+                            <div class="comic-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">ID:</span> {{ comic.bl_record_id }}
+                                </div>
+                                
+                                {% if comic.authors %}
+                                    <div class="meta-item">
+                                        <span class="meta-label">Authors:</span> 
+                                        {{ comic.authors|join:", " }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if comic.publication_years %}
+                                    <div class="meta-item">
+                                        <span class="meta-label">Years:</span> 
+                                        {{ comic.publication_years|join:", " }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if comic.genres %}
+                                    <div class="meta-item">
+                                        <span class="meta-label">Genres:</span> 
+                                        {{ comic.genres|join:", " }}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="meta-item">
+                                    <span class="meta-label">ISBN:</span> 
+                                    {% if comic.isbn and comic.isbn.0 != "missing" %}
+                                        {{ comic.isbn|join:", " }}
+                                    {% else %}
+                                        <span class="isbn-missing">missing</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if comic.variant_titles %}
+                                <div class="meta-item" style="margin-top: 0.5rem;">
+                                    <span class="meta-label">Variant Titles:</span> 
+                                    {{ comic.variant_titles|join:", " }}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Display multi-value fields from other_fields -->
+                            {% for field_name, field_values in comic.get_multi_value_fields.items %}
+                                <div class="meta-item" style="margin-top: 0.5rem;">
+                                    <span class="meta-label">{{ field_name|title }}:</span>
+                                    {% if field_values|length > 1 %}
+                                        {{ field_values|join:", " }}
+                                    {% else %}
+                                        {{ field_values.0 }}
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            
+                            <div style="margin-top: 1rem;">
+                                <form action="{% url 'save_to_search_list' %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="bl_id" value="{{ comic.bl_record_id }}">
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn btn-small">Add to Search List</button>
+                                </form>
+                                <a href="{% url 'comic_detail' comic.bl_record_id %}" class="btn btn-secondary btn-small">View Details</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- Ungrouped Results -->
+            {% for comic in results %}
+                <div class="comic-card">
+                    <div class="comic-title">
+                        <a href="{% url 'comic_detail' comic.bl_record_id %}" style="text-decoration: none; color: #333;">
+                            {{ comic.get_clean_title }}
+                        </a>
+                    </div>
+                    
+                    <div class="comic-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">ID:</span> {{ comic.bl_record_id }}
+                        </div>
+                        
+                        {% if comic.authors %}
+                            <div class="meta-item">
+                                <span class="meta-label">Authors:</span> 
+                                {{ comic.authors|join:", " }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if comic.publication_years %}
+                            <div class="meta-item">
+                                <span class="meta-label">Years:</span> 
+                                {{ comic.publication_years|join:", " }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if comic.genres %}
+                            <div class="meta-item">
+                                <span class="meta-label">Genres:</span> 
+                                {{ comic.genres|join:", " }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="meta-item">
+                            <span class="meta-label">ISBN:</span> 
+                            {% if comic.isbn and comic.isbn.0 != "missing" %}
+                                {{ comic.isbn|join:", " }}
+                            {% else %}
+                                <span class="isbn-missing">missing</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if comic.variant_titles %}
+                        <div class="meta-item" style="margin-top: 0.5rem;">
+                            <span class="meta-label">Variant Titles:</span> 
+                            {{ comic.variant_titles|join:", " }}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Display multi-value fields from other_fields -->
+                    {% for field_name, field_values in comic.get_multi_value_fields.items %}
+                        <div class="meta-item" style="margin-top: 0.5rem;">
+                            <span class="meta-label">{{ field_name|title }}:</span>
+                            {% if field_values|length > 1 %}
+                                {{ field_values|join:", " }}
+                            {% else %}
+                                {{ field_values.0 }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <div style="margin-top: 1rem;">
+                        <form action="{% url 'save_to_search_list' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="bl_id" value="{{ comic.bl_record_id }}">
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="btn btn-small">Add to Search List</button>
+                        </form>
+                        <a href="{% url 'comic_detail' comic.bl_record_id %}" class="btn btn-secondary btn-small">View Details</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+</div>
+
+{% if results|length >= 100 %}
+    <div class="alert alert-warning">
+        <strong>Note:</strong> Results are limited to the first 10,000 matches. 
+        If you don't see what you're looking for, try using more specific search terms.
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Comics Encyclopedia - Search{% endblock %}
+
+{% block content %}
+<div class="search-form">
+    <h2 style="margin-bottom: 1.5rem; color: #333;">Search Comics Database</h2>
+    
+    <form action="{% url 'search' %}" method="get">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="q">Search by Title:</label>
+                <input type="text" id="q" name="q" placeholder="Enter comic title or variant title..." />
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="genre">Filter by Genre:</label>
+                <select id="genre" name="genre">
+                    <option value="">-- All Genres --</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Horror">Horror</option>
+                    <option value="Science fiction">Science Fiction</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="Drama">Drama</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="group_by">Group Results By:</label>
+                <select id="group_by" name="group_by">
+                    <option value="">-- No Grouping --</option>
+                    <option value="author">Author</option>
+                    <option value="year">Year of Publication</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="order">Sort Order:</label>
+                <select id="order" name="order">
+                    <option value="asc">Sort A–Z</option>
+                    <option value="desc">Sort Z–A</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <button type="submit" class="btn">Search Comics</button>
+            <a href="{% url 'advanced_search' %}" class="btn btn-secondary">Advanced Search</a>
+            <a href="{% url 'browse_comics' %}" class="btn btn-secondary">Browse All Comics</a>
+        </div>
+    </form>
+</div>
+
+<div class="alert alert-info">
+    <strong>Search Tips:</strong>
+    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+        <li>Enter any part of a comic title to find matches</li>
+        <li>Use genre filters to narrow down results</li>
+        <li>Group results by author or publication year for better organization</li>
+        <li>Comics with missing ISBN will be clearly marked</li>
+        <li>Multi-value fields (like multiple authors) are displayed as lists</li>
+    </ul>
+</div>
+
+{% if request.session.search_list %}
+<div class="alert alert-warning">
+    You have {{ request.session.search_list|length }} comic(s) in your search list. 
+    <a href="{% url 'view_search_list' %}">View Search List</a> | 
+    <a href="{% url 'clear_search_results' %}">Clear All</a>
+</div>
+{% endif %}
+{% endblock %}

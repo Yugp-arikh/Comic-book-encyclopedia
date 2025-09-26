@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}My Search List - Comics Encyclopedia{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <div class="results-header">
+        <div>
+            <h2>My Search List</h2>
+            <p>Comics you've saved during your search session</p>
+        </div>
+        <div>
+            {% if comics %}
+                <a href="{% url 'clear_search_results' %}" class="btn btn-danger btn-small">Clear All</a>
+            {% endif %}
+            <a href="{% url 'index' %}" class="btn btn-secondary btn-small">Back to Search</a>
+        </div>
+    </div>
+
+    {% if not comics %}
+        <div style="padding: 3rem; text-align: center; color: #666;">
+            <h3>Your search list is empty</h3>
+            <p>Comics you add to your search list will appear here. The list is cleared when you exit the program.</p>
+            <a href="{% url 'index' %}" class="btn">Start Searching</a>
+        </div>
+    {% else %}
+        <div style="padding: 1rem 2rem; background: #f8f9fa; border-bottom: 1px solid #e1e5e9;">
+            <p><strong>{{ comics|length }}</strong> comic{{ comics|length|pluralize }} in your search list</p>
+            <small style="color: #666;">
+                Note: This list is stored in your session and will be cleared when you exit the program or clear your browser data.
+            </small>
+        </div>
+
+        {% for comic in comics %}
+            <div class="search-list-item">
+                <div style="flex: 1;">
+                    <div class="comic-title" style="margin-bottom: 0.5rem;">
+                        <a href="{% url 'comic_detail' comic.bl_record_id %}" style="text-decoration: none; color: #333;">
+                            {{ comic.get_clean_title }}
+                        </a>
+                    </div>
+                    
+                    <div class="comic-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">ID:</span> {{ comic.bl_record_id }}
+                        </div>
+                        
+                        {% if comic.authors %}
+                            <div class="meta-item">
+                                <span class="meta-label">Authors:</span> 
+                                {{ comic.authors|slice:":3"|join:", " }}
+                                {% if comic.authors|length > 3 %}
+                                    <span style="color: #666;">and {{ comic.authors|length|add:"-3" }} more</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if comic.publication_years %}
+                            <div class="meta-item">
+                                <span class="meta-label">Years:</span> 
+                                {{ comic.publication_years|join:", " }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="meta-item">
+                            <span class="meta-label">ISBN:</span> 
+                            {% if comic.isbn and comic.isbn.0 != "missing" %}
+                                {{ comic.isbn|join:", " }}
+                            {% else %}
+                                <span class="isbn-missing">missing</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <a href="{% url 'comic_detail' comic.bl_record_id %}" class="btn btn-secondary btn-small">View</a>
+                    <form action="{% url 'remove_from_search_list' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="bl_id" value="{{ comic.bl_record_id }}">
+                        <button type="submit" class="btn btn-danger btn-small" 
+                                onclick="return confirm('Remove this comic from your search list?')">Remove</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+{% if comics %}
+    <div class="alert alert-info" style="margin-top: 2rem;">
+        <strong>About Search Lists:</strong>
+        <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+            <li>Your search list is stored temporarily in your browser session</li>
+            <li>The list will be cleared when you close your browser or clear the session</li>
+            <li>No account is created - this is for temporary organization during your search</li>
+            <li>You can add comics from search results or detail pages</li>
+        </ul>
+    </div>
+{% endif %}
+{% endblock %}

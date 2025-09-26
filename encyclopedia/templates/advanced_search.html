@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Advanced Search - Comics Encyclopedia{% endblock %}
+
+{% block content %}
+<div class="search-form">
+    <h2 style="margin-bottom: 1.5rem; color: #333;">Advanced Search</h2>
+    <p style="margin-bottom: 2rem; color: #666;">
+        Use multiple search parameters to find specific comics. All fields are optional - 
+        leave blank to search all values for that field.
+    </p>
+    
+    <form action="{% url 'advanced_search' %}" method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="author">Author Name:</label>
+                <input type="text" id="author" name="author" placeholder="e.g., Stan Lee, Alan Moore..." />
+                <small style="color: #666;">Search for comics by specific author</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="year">Publication Year:</label>
+                <input type="text" id="year" name="year" placeholder="e.g., 2020, 1990s..." />
+                <small style="color: #666;">Year or decade of publication</small>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="genre">Genre:</label>
+                <select id="genre" name="genre">
+                    <option value="">-- All Genres --</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Horror">Horror</option>
+                    <option value="Science fiction">Science Fiction</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Comedy">Comedy</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Superhero">Superhero</option>
+                    <option value="Mystery">Mystery</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Thriller">Thriller</option>
+                </select>
+                <small style="color: #666;">Filter by comic genre</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="edition">Edition/Format:</label>
+                <input type="text" id="edition" name="edition" placeholder="e.g., First edition, Hardcover..." />
+                <small style="color: #666;">Search by edition type or format</small>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="languages">Languages:</label>
+                <input type="text" id="languages" name="languages" placeholder="e.g., English, French, Spanish..." />
+                <small style="color: #666;">Comma-separated list of languages</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="name_type">Name Type:</label>
+                <input type="text" id="name_type" name="name_type" placeholder="e.g., pseudonym, real name..." />
+                <small style="color: #666;">Type of author name (if specified)</small>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <button type="submit" class="btn">Search Comics</button>
+            <a href="{% url 'index' %}" class="btn btn-secondary">Back to Simple Search</a>
+        </div>
+    </form>
+</div>
+
+<div class="alert alert-info">
+    <strong>Advanced Search Features:</strong>
+    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+        <li><strong>Multiple Parameters:</strong> Combine different search criteria for precise results</li>
+        <li><strong>Partial Matching:</strong> Search terms will match partial text within fields</li>
+        <li><strong>Language Search:</strong> Enter multiple languages separated by commas</li>
+        <li><strong>Edition Search:</strong> Find specific editions, formats, or publication details</li>
+        <li><strong>Author Types:</strong> Search by how author names are categorized</li>
+        <li><strong>Year Flexibility:</strong> Search by specific years or decades</li>
+    </ul>
+</div>
+
+<div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 2rem;">
+    <h3 style="margin-bottom: 1rem; color: #333;">Search Examples</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div>
+            <h4 style="color: #667eea; margin-bottom: 0.5rem;">Find Comics by Specific Author</h4>
+            <p style="color: #666; font-size: 0.9rem;">
+                Author: "Blakeslee"<br>
+                Genre: "Novel"
+            </p>
+        </div>
+        <div>
+            <h4 style="color: #667eea; margin-bottom: 0.5rem;">Find Comics from Recent Years</h4>
+            <p style="color: #666; font-size: 0.9rem;">
+                Year: "2020"<br>
+                (Finds comics published in 2020)
+            </p>
+        </div>
+        <div>
+            <h4 style="color: #667eea; margin-bottom: 0.5rem;">Find English Language Comics</h4>
+            <p style="color: #666; font-size: 0.9rem;">
+                Languages: "English"<br>
+                (Finds comics available in English)
+            </p>
+        </div>
+        <div>
+            <h4 style="color: #667eea; margin-bottom: 0.5rem;">Find Young Adult Fiction</h4>
+            <p style="color: #666; font-size: 0.9rem;">
+                Genre: "Young adult fiction"<br>
+                (Matches young adult genre comics)
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

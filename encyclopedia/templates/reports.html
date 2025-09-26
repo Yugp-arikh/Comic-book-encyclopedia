@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Reports - Comics Encyclopedia{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+    
+    <!-- Top Search Queries -->
+    <div class="results-container">
+        <div class="results-header">
+            <h3>Top 10 Search Queries</h3>
+        </div>
+        
+        {% if not top_queries %}
+            <div style="padding: 2rem; text-align: center; color: #666;">
+                <p>No search queries recorded yet.</p>
+            </div>
+        {% else %}
+            {% for query, count in top_queries %}
+                <div class="comic-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div class="comic-title" style="font-size: 1rem;">
+                                {% if query %}
+                                    "{{ query }}"
+                                {% else %}
+                                    <em>Empty query</em>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <span style="background: #667eea; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem;">
+                                {{ count }} search{{ count|pluralize:"es" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+    <!-- Top Search Results -->
+    <div class="results-container">
+        <div class="results-header">
+            <h3>Top 10 Search Results</h3>
+        </div>
+        
+        {% if not top_results %}
+            <div style="padding: 2rem; text-align: center; color: #666;">
+                <p>No search results recorded yet.</p>
+            </div>
+        {% else %}
+            {% for comic, count in top_results %}
+                <div class="comic-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            {% if comic %}
+                                <div class="comic-title" style="font-size: 1rem; margin-bottom: 0.3rem;">
+                                    <a href="{% url 'comic_detail' comic.bl_record_id %}" style="text-decoration: none; color: #333;">
+                                        {{ comic.get_clean_title }}
+                                    </a>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #666;">
+                                    ID: {{ comic.bl_record_id }}
+                                    {% if comic.authors %}
+                                        | {{ comic.authors|slice:":2"|join:", " }}
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="comic-title" style="font-size: 1rem;">
+                                    <em>Comic not found</em>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span style="background: #28a745; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem;">
+                                {{ count }} result{{ count|pluralize }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- High Frequency Comics -->
+<div class="results-container" style="margin-top: 2rem;">
+    <div class="results-header">
+        <h3>Comics Appearing in More Than 100 Search Results</h3>
+        <p style="font-size: 0.9rem; color: #666; margin: 0;">
+            Comics that frequently appear in search results may indicate popular or widely-searched titles
+        </p>
+    </div>
+    
+    {% if not high_freq %}
+        <div style="padding: 2rem; text-align: center; color: #666;">
+            <p>No comics have appeared in more than 100 search results yet.</p>
+            <small>This report will show comics that appear frequently across different searches.</small>
+        </div>
+    {% else %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; padding: 2rem;">
+            {% for title, count in high_freq %}
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 5px; border-left: 4px solid #dc3545;">
+                    <div class="comic-title" style="font-size: 1rem; margin-bottom: 0.5rem;">
+                        {{ title }}
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666;">
+                        Appeared in <strong>{{ count }}</strong> search result{{ count|pluralize }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Report Information -->
+<div class="alert alert-info" style="margin-top: 2rem;">
+    <strong>About These Reports:</strong>
+    <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+        <li><strong>Top Search Queries:</strong> Most frequently entered search terms by users</li>
+        <li><strong>Top Search Results:</strong> Comics that appear most often in search results</li>
+        <li><strong>High Frequency Comics:</strong> Comics appearing in more than 100 different search results</li>
+        <li>All data is based on search activity since the system was last reset</li>
+        <li>Reports help identify popular content and search patterns</li>
+    </ul>
+</div>
+{% endblock %}
